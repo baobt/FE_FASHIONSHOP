@@ -9,8 +9,8 @@ export const ShopContext = createContext()
 
 const ShopContextProvider = (props) => {
 
-    const currency = '$'
-    const delivery_fee = 10
+    const currency = 'đ'
+    const delivery_fee = 30000
     const backendUrl = import.meta.env.VITE_BACKEND_URL
     const [search, setSearch] = useState()
     const [showSearch, setShowSearch] = useState(false)
@@ -24,6 +24,21 @@ const ShopContextProvider = (props) => {
         if(!size){
             toast.error("Select Product size")
             return
+        }
+
+        // Check stock availability
+        const productData = products.find(p => p._id === itemId);
+        if (!productData) {
+            toast.error("Product not found");
+            return;
+        }
+
+        const availableStock = productData.sizeStocks?.[size] || 0;
+        const currentInCart = cartItems[itemId]?.[size] || 0;
+
+        if (currentInCart + 1 > availableStock) {
+            toast.warning(`Only ${availableStock} items available in stock for this size`);
+            return;
         }
 
         let cartData = structuredClone(cartItems);
@@ -153,13 +168,19 @@ const ShopContextProvider = (props) => {
         }
     },[])
 
+    // Function to refresh products data
+    const refreshProducts = async () => {
+        await getProductsData();
+    };
+
     const value = {
-        products, currency, delivery_fee,  
+        products, currency, delivery_fee,
         search, setSearch, showSearch, setShowSearch,
-        cartItems,addtoCart,setCartItems,  
+        cartItems,addtoCart,setCartItems,
         getCartCount,updateQuantity,
         getCartAmount, navigate, backendUrl,
-        setToken, token
+        setToken, token,
+        refreshProducts // Add this to context
     }
 
     return(

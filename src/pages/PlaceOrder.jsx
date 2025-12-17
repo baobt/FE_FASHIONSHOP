@@ -10,7 +10,7 @@ import { toast } from 'react-toastify'
 const PlaceOrder = () => {
 
   const [method, setMethod] = useState('cod')
-  const { navigate, backendUrl, token, cartItems, setCartItems, getCartAmount, delivery_fee, products } = useContext(ShopContext)
+  const { navigate, backendUrl, token, cartItems, setCartItems, getCartAmount, delivery_fee, products, refreshProducts } = useContext(ShopContext)
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -97,6 +97,7 @@ const PlaceOrder = () => {
             if (response.data.success) {
               toast.success('Payment successful! Order placed.')
               setCartItems({})
+              await refreshProducts() // Refresh stock data
               navigate('/orders')
             } else {
               toast.error(response.data.message)
@@ -149,13 +150,22 @@ const PlaceOrder = () => {
           const response = await axios.post(backendUrl + '/api/order/place', orderData, { headers: { token } })
           if (response.data.success) {
             setCartItems({})
+            await refreshProducts()
             navigate('/orders')
           } else {
             toast.error(response.data.message)
           }
           break;
 
-        
+        case 'momo':
+          const momoResponse = await axios.post(backendUrl + '/api/order/momo', orderData, { headers: { token } })
+          if (momoResponse.data.success) {
+            toast.success('Redirecting to MoMo payment...')
+            window.location.href = momoResponse.data.payUrl
+          } else {
+            toast.error(momoResponse.data.message)
+          }
+          break;
 
         default:
           break;
