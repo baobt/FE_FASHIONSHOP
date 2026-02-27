@@ -161,16 +161,8 @@ const PlaceOrder = () => {
       }
 
       if (method === 'momo') {
-        const res = await axios.post(
-          backendUrl + '/api/order/momo',
-          orderData,
-          { headers: { token } }
-        )
-        if (res.data.success) {
-          window.location.href = res.data.payUrl
-        } else {
-          toast.error(res.data.message || 'MoMo payment failed')
-        }
+        toast.info('MoMo payment is coming soon!')
+        return // Prevent form submission
       }
     } catch (err) {
       toast.error(err.message)
@@ -319,24 +311,34 @@ const PlaceOrder = () => {
           <Title text1='PAYMENT' text2='METHOD' />
 
           <div className='grid grid-cols-1 md:grid-cols-3 gap-3'>
-            {[
-              { id: 'paypal', img: assets.paypal_logo },
-              { id: 'momo', img: assets.momo_logo },
-              { id: 'cod', text: 'CASH ON DELIVERY' }
-            ].map(item => (
-              <div
-                key={item.id}
-                onClick={() => setMethod(item.id)}
-                className={`cursor-pointer border rounded-xl p-4 flex items-center justify-center gap-3 transition
-                ${method === item.id ? 'border-black ring-1 ring-black' : 'hover:border-gray-400'}`}
-              >
-                {item.img ? (
-                  <img src={item.img} className='h-6' />
-                ) : (
-                  <p className='text-sm font-medium'>{item.text}</p>
-                )}
+            {/* PayPal */}
+            <div
+              onClick={() => setMethod('paypal')}
+              className={`cursor-pointer border rounded-xl p-4 flex items-center justify-center gap-3 transition
+              ${method === 'paypal' ? 'border-black ring-1 ring-black' : 'hover:border-gray-400'}`}
+            >
+              <img src={assets.paypal_logo} className='h-6' />
+            </div>
+
+            {/* MoMo - Coming Soon */}
+            <div className='relative border rounded-xl p-4 flex items-center justify-center gap-3 bg-gray-50 opacity-60 cursor-not-allowed'>
+              <img src={assets.momo_logo} className='h-6' />
+              {/* Coming Soon Overlay */}
+              <div className='absolute inset-0 bg-black bg-opacity-50 rounded-xl flex items-center justify-center'>
+                <span className='text-white font-semibold text-sm px-3 py-1 bg-black bg-opacity-75 rounded-lg'>
+                  Coming Soon
+                </span>
               </div>
-            ))}
+            </div>
+
+            {/* Cash on Delivery */}
+            <div
+              onClick={() => setMethod('cod')}
+              className={`cursor-pointer border rounded-xl p-4 flex items-center justify-center gap-3 transition
+              ${method === 'cod' ? 'border-black ring-1 ring-black' : 'hover:border-gray-400'}`}
+            >
+              <p className='text-sm font-medium'>CASH ON DELIVERY</p>
+            </div>
           </div>
 
           {method === 'paypal' && (
