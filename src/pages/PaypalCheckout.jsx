@@ -4,6 +4,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useContext } from "react";
 import { ShopContext } from "../context/ShopContext";
+import { convertVNDtoUSD } from "../utils/currency";
 
 const PaypalCheckout = () => {
   const { state } = useLocation();
@@ -11,6 +12,8 @@ const PaypalCheckout = () => {
   const { backendUrl, token, setCartItems } = useContext(ShopContext);
 
   const orderData = state?.orderData;
+
+
 
   if (!orderData) return <p>No order found</p>;
 
@@ -20,10 +23,16 @@ const PaypalCheckout = () => {
 
       <PayPalButtons
         createOrder={(data, actions) => {
+          const usdAmount = convertVNDtoUSD(orderData.amount);
+
           return actions.order.create({
             purchase_units: [
               {
-                amount: { value: orderData.amount.toString() }
+                amount: {
+                  value: usdAmount.toFixed(2),
+                  currency_code: 'USD'
+                },
+                description: `Order Total: ${orderData.amount.toLocaleString()} VND (${usdAmount.toFixed(2)} USD)`
               }
             ]
           });

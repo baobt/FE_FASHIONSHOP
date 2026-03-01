@@ -5,6 +5,7 @@ import { assets } from '../assets/assets'
 import { ShopContext } from '../context/ShopContext'
 import axios from 'axios'
 import { toast } from 'react-toastify'
+import { convertVNDtoUSD } from '../utils/currency'
 
 const PlaceOrder = () => {
   const {
@@ -78,6 +79,8 @@ const PlaceOrder = () => {
     )
   }
 
+
+
   const prepareOrderData = () => {
     let orderItems = []
 
@@ -96,10 +99,15 @@ const PlaceOrder = () => {
       }
     }
 
+    const vndAmount = getCartAmount() + delivery_fee
+    const usdAmount = convertVNDtoUSD(vndAmount)
+
     return {
       address: formData,
       items: orderItems,
-      amount: getCartAmount() + delivery_fee
+      amount: vndAmount, // Store VND amount
+      usdAmount: usdAmount, // Store converted USD amount for PayPal
+      currency: 'VND'
     }
   }
 
@@ -109,20 +117,28 @@ const PlaceOrder = () => {
 
       window.paypal.Buttons({
         createOrder: (data, actions) => {
+          const vndAmount = getCartAmount() + delivery_fee
+          const usdAmount = convertVNDtoUSD(vndAmount)
+
           return actions.order.create({
             purchase_units: [{
               amount: {
-                value: (getCartAmount() + delivery_fee).toFixed(2)
-              }
+                value: usdAmount.toFixed(2),
+                currency_code: 'USD'
+              },
+              description: `Order Total: ${vndAmount.toLocaleString()} VND (${usdAmount.toFixed(2)} USD)`
             }]
           })
         },
         onApprove: async (data, actions) => {
           try {
-            await actions.order.capture()
+            const details = await actions.order.capture()
             const response = await axios.post(
               backendUrl + '/api/order/paypal',
-              prepareOrderData(),
+              {
+                orderData: prepareOrderData(),
+                paypalInfo: details
+              },
               { headers: { token } }
             )
 
@@ -131,9 +147,12 @@ const PlaceOrder = () => {
               setCartItems({})
               refreshProducts()
               navigate('/orders')
+            } else {
+              toast.error(response.data.message || 'Payment failed')
             }
-          } catch {
-            toast.error('Payment failed')
+          } catch (err) {
+            console.error('PayPal payment error:', err)
+            toast.error(err.response?.data?.message || 'Payment failed')
           }
         }
       }).render(paypalRef.current)
@@ -153,7 +172,7 @@ const PlaceOrder = () => {
           { headers: { token } }
         )
         if (res.data.success) {
-          setOrderPlaced(true) // Mark order as placed
+          setOrderPlaced(true) 
           setCartItems({})
           refreshProducts()
           navigate('/orders')
@@ -162,7 +181,7 @@ const PlaceOrder = () => {
 
       if (method === 'momo') {
         toast.info('MoMo payment is coming soon!')
-        return // Prevent form submission
+        return 
       }
     } catch (err) {
       toast.error(err.message)
@@ -175,7 +194,7 @@ const PlaceOrder = () => {
       className='max-w-7xl mx-auto px-4 py-10 grid grid-cols-1 lg:grid-cols-2 gap-10 border-t'
     >
 
-      {/* ===== LEFT: DELIVERY INFO ===== */}
+   
       <div className='w-full sm:max-w-[520px] bg-white rounded-2xl p-8 shadow-sm space-y-6'>
 
   <Title text1={'DELIVERY'} text2={'INFORMATION'} />
@@ -320,7 +339,7 @@ const PlaceOrder = () => {
               <img src={assets.paypal_logo} className='h-6' />
             </div>
 
-            {/* MoMo - Coming Soon */}
+          
             <div className='relative border rounded-xl p-4 flex items-center justify-center gap-3 bg-gray-50 opacity-60 cursor-not-allowed'>
               <img src={assets.momo_logo} className='h-6' />
               {/* Coming Soon Overlay */}

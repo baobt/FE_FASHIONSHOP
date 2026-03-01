@@ -29,7 +29,7 @@ const ProductItem = ({ id, image, name, price }) => {
               className={`absolute top-3 right-3 p-2 rounded-full transition-all duration-200 ${
                 isInWishlist(id)
                   ? 'bg-red-500 text-white opacity-100'
-                  : 'bg-white/80 backdrop-blur-sm opacity-0 group-hover:opacity-100 hover:bg-red-500 hover:text-white'
+                  : 'bg-white/80 backdrop-blur-sm opacity-100 md:opacity-0 md:group-hover:opacity-100 hover:bg-red-500 hover:text-white'
               }`}
               title={isInWishlist(id) ? "Remove from Wishlist" : "Add to Wishlist"}
             >
