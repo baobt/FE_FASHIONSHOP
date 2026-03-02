@@ -18,6 +18,7 @@ const ShopContextProvider = (props) => {
     const [products, setProducts] = useState([]);
     const [token, setToken] = useState('')
     const [wishlist, setWishlist] = useState([])
+    const [serverReady, setServerReady] = useState(false)
     const navigate = useNavigate()
 
     const addtoCart = async (itemId,size) => {
@@ -232,9 +233,12 @@ const ShopContextProvider = (props) => {
         return wishlist.some(item => item._id === productId)
     }
 
+    // Only fetch products when server is confirmed ready
     useEffect(()=>{
-        getProductsData()
-    },[])
+        if (serverReady) {
+            getProductsData()
+        }
+    },[serverReady])
 
 
     useEffect(()=>{
@@ -252,7 +256,8 @@ const ShopContextProvider = (props) => {
         getCartCount,updateQuantity,
         getCartAmount, navigate, backendUrl,
         setToken, token, refreshProducts,
-        wishlist, toggleWishlist, isInWishlist
+        wishlist, toggleWishlist, isInWishlist,
+        setServerReady
     }
 
     return(
