@@ -12,27 +12,29 @@ const Login = () => {
   const [name,setName] = useState('')
   const [password,setPassword] = useState('')
   const [email,setEmail] = useState('')
-  const [verificationCode, setVerificationCode] = useState('')
-  const [showVerification, setShowVerification] = useState(false)
-  const [showForgotPassword, setShowForgotPassword] = useState(false)
-  const [resetCode, setResetCode] = useState('')
-  const [newPassword, setNewPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [showNewPassword, setShowNewPassword] = useState(false)
+  // Email verification temporarily disabled
+  // const [verificationCode, setVerificationCode] = useState('')
+  // const [showVerification, setShowVerification] = useState(false)
+  // const [showForgotPassword, setShowForgotPassword] = useState(false)
+  // const [resetCode, setResetCode] = useState('')
+  // const [newPassword, setNewPassword] = useState('')
+  // const [showPassword, setShowPassword] = useState(false)
+  // const [showNewPassword, setShowNewPassword] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  const handleResendVerification = async () => {
-    try {
-      const response = await axios.post(backendUrl + '/api/user/resend-verification', {email})
-      if(response.data.success){
-        toast.success('Verification code sent to your email!')
-      }else {
-        toast.error(response.data.message)
-      }
-    } catch (error) {
-      toast.error('Failed to resend verification code')
-    }
-  }
+  // Email verification temporarily disabled
+  // const handleResendVerification = async () => {
+  //   try {
+  //     const response = await axios.post(backendUrl + '/api/user/resend-verification', {email})
+  //     if(response.data.success){
+  //       toast.success('Verification code sent to your email!')
+  //     }else {
+  //       toast.error(response.data.message)
+  //     }
+  //   } catch (error) {
+  //     toast.error('Failed to resend verification code')
+  //   }
+  // }
 
   const onSubmitHandler = async (event) =>{
     event.preventDefault();
@@ -40,6 +42,31 @@ const Login = () => {
 
     try{
 
+      if(currentState === 'Sign Up'){
+
+        const response = await axios.post(backendUrl + '/api/user/register',{name,password,email})
+        if(response.data.success){
+          toast.success('Registration successful!')
+          setToken(response.data.token)
+          localStorage.setItem('token',response.data.token)
+        }else {
+          toast.error(response.data.message)
+        }
+
+      }else{
+
+        const response = await axios.post(backendUrl + '/api/user/login', {email,password})
+        if(response.data.success){
+          setToken(response.data.token)
+           localStorage.setItem('token',response.data.token)
+        } else {
+          toast.error(response.data.message)
+        }
+
+      }
+
+      // Email verification temporarily disabled
+      /*
       if(currentState === 'Sign Up'){
 
         const response = await axios.post(backendUrl + '/api/user/register',{name,password,email})
@@ -105,6 +132,7 @@ const Login = () => {
         }
 
       }
+      */
 
     }catch (error){
       console.log(error)
@@ -136,28 +164,9 @@ const Login = () => {
         <p className="text-sm text-gray-500 mt-1">
           {currentState === 'Login'
             ? 'Welcome back, please sign in'
-            : currentState === 'Sign Up'
-            ? 'Create your account to continue'
-            : currentState === 'Verify Email'
-            ? 'Enter the verification code sent to your email'
-            : currentState === 'Forgot Password'
-            ? 'Enter your email to reset password'
-            : 'Enter the reset code and new password'}
+            : 'Create your account to continue'}
         </p>
       </div>
-
-      {/* Verification Code */}
-      {currentState === 'Verify Email' && (
-        <input
-          onChange={(e) => setVerificationCode(e.target.value)}
-          value={verificationCode}
-          type="text"
-          placeholder="Enter 6-digit verification code"
-          className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-black transition text-center text-lg font-mono"
-          maxLength="6"
-          required
-        />
-      )}
 
       {/* Name */}
       {currentState === 'Sign Up' && (
@@ -172,37 +181,12 @@ const Login = () => {
       )}
 
       {/* Email */}
-      {(currentState === 'Login' || currentState === 'Sign Up' || currentState === 'Forgot Password') && (
+      {(currentState === 'Login' || currentState === 'Sign Up') && (
         <input
           onChange={(e) => setEmail(e.target.value)}
           value={email}
           type="email"
           placeholder="Email address"
-          className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-black transition"
-          required
-        />
-      )}
-
-      {/* Reset Code */}
-      {currentState === 'Reset Password' && (
-        <input
-          onChange={(e) => setResetCode(e.target.value)}
-          value={resetCode}
-          type="text"
-          placeholder="Enter 6-digit reset code"
-          className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-black transition text-center text-lg font-mono"
-          maxLength="6"
-          required
-        />
-      )}
-
-      {/* New Password */}
-      {currentState === 'Reset Password' && (
-        <input
-          onChange={(e) => setNewPassword(e.target.value)}
-          value={newPassword}
-          type="password"
-          placeholder="New password"
           className="w-full px-4 py-2 border rounded-lg outline-none focus:ring-2 focus:ring-black transition"
           required
         />
@@ -220,55 +204,22 @@ const Login = () => {
         />
       )}
 
+      {/* Email verification UI temporarily disabled - commented out below */}
+      {/*
+      <input ... verification code input />
+      <input ... email for forgot password />
+      <input ... reset code />
+      <input ... new password />
+      */}
+
       {/* Actions */}
-      <div className="flex justify-between items-center text-sm text-gray-500">
-        {currentState === 'Login' && (
-          <p
-            onClick={() => setCurrenState('Forgot Password')}
-            className="cursor-pointer hover:text-black transition"
-          >
-            Forgot password?
-          </p>
-        )}
-
-        {currentState === 'Verify Email' && (
-          <p
-            onClick={handleResendVerification}
-            className="cursor-pointer hover:text-black transition"
-          >
-            Resend code
-          </p>
-        )}
-
+      <div className="flex justify-end items-center text-sm text-gray-500">
         {currentState === 'Login' ? (
           <p
             onClick={() => setCurrenState('Sign Up')}
             className="cursor-pointer text-black font-medium hover:underline"
           >
             Create account
-          </p>
-        ) : currentState === 'Forgot Password' || currentState === 'Reset Password' ? (
-          <p
-            onClick={() => {
-              setCurrenState('Login')
-              setShowForgotPassword(false)
-              setResetCode('')
-              setNewPassword('')
-            }}
-            className="cursor-pointer text-black font-medium hover:underline"
-          >
-            Back to login
-          </p>
-        ) : currentState === 'Verify Email' ? (
-          <p
-            onClick={() => {
-              setCurrenState('Login')
-              setShowVerification(false)
-              setVerificationCode('')
-            }}
-            className="cursor-pointer text-black font-medium hover:underline"
-          >
-            Back to login
           </p>
         ) : (
           <p
@@ -280,6 +231,19 @@ const Login = () => {
         )}
       </div>
 
+      {/* Email verification actions temporarily disabled */}
+      {/*
+      <div className="flex justify-between items-center text-sm text-gray-500">
+        {currentState === 'Login' && (
+          <p onClick={() => setCurrenState('Forgot Password')}>Forgot password?</p>
+        )}
+        {currentState === 'Verify Email' && (
+          <p onClick={handleResendVerification}>Resend code</p>
+        )}
+        ... complex conditional logic for different states ...
+      </div>
+      */}
+
       {/* Button */}
       <button
         type="submit"
@@ -287,11 +251,7 @@ const Login = () => {
         className="mt-4 bg-black text-white py-2 rounded-lg font-medium hover:bg-gray-800 transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Processing...' : (
-          currentState === 'Login' ? 'Sign In' :
-          currentState === 'Sign Up' ? 'Sign Up' :
-          currentState === 'Verify Email' ? 'Verify Email' :
-          currentState === 'Forgot Password' ? 'Send Reset Code' :
-          'Reset Password'
+          currentState === 'Login' ? 'Sign In' : 'Sign Up'
         )}
       </button>
     </form>
